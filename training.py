@@ -6,12 +6,11 @@ Run from the project root:      python training.py
 
 Outputs
 -------
-model/*.joblib        five complete pipelines (preprocessing + classifier)
+model/*.joblib        five complete pipelines
 model/metrics.csv     the 6 metrics x 5 models comparison table
 model/metadata.json   features, split info, class distribution, best params,
                       library versions, confusion matrices
-test_data.csv         the held-out 20 % test split (features + target) - this is
-                      the file you upload in the Streamlit app
+test_data.csv         the held-out 20 % test split (features + target)
 assets/*.png          ROC curves / confusion matrices / metric comparison plots
 """
 import argparse
