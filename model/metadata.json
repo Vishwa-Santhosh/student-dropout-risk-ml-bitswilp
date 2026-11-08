@@ -135,11 +135,11 @@
     "Support Vector Machine": "defaults"
   },
   "fit_seconds": {
-    "Logistic Regression": 6.2,
-    "Decision Tree": 24.9,
-    "KNN": 25.6,
+    "Logistic Regression": 5.4,
+    "Decision Tree": 24.0,
+    "KNN": 23.8,
     "Naive Bayes": 0.3,
-    "Support Vector Machine": 218.1
+    "Support Vector Machine": 223.8
   },
   "confusion_matrices": {
     "Logistic Regression": [
