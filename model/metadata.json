@@ -1,0 +1,203 @@
+{
+  "dataset": {
+    "file": "student_dropout_risk_2026.csv",
+    "rows": 100000,
+    "raw_columns": 34,
+    "n_features": 32,
+    "missing_cells": 0,
+    "duplicate_rows": 0,
+    "dropped_columns": [
+      "person_id"
+    ],
+    "target": "dropout"
+  },
+  "features": [
+    "age",
+    "gender",
+    "nationality",
+    "first_generation",
+    "disability_status",
+    "family_income_level",
+    "scholarship_holder",
+    "tuition_up_to_date",
+    "part_time_job",
+    "weekly_work_hours",
+    "course_type",
+    "study_mode",
+    "semester",
+    "international_student",
+    "admission_grade",
+    "previous_qualification_grade",
+    "units_enrolled",
+    "units_passed",
+    "units_failed",
+    "gpa_semester_1",
+    "gpa_semester_2",
+    "attendance_rate",
+    "assignments_submitted_rate",
+    "library_visits_per_month",
+    "lms_logins_per_week",
+    "extracurricular_activities",
+    "missed_deadlines",
+    "stress_level",
+    "mental_health_support",
+    "satisfaction_score",
+    "commute_time_mins",
+    "sleep_hours"
+  ],
+  "numeric_features": [
+    "age",
+    "first_generation",
+    "disability_status",
+    "scholarship_holder",
+    "tuition_up_to_date",
+    "part_time_job",
+    "weekly_work_hours",
+    "semester",
+    "international_student",
+    "admission_grade",
+    "previous_qualification_grade",
+    "units_enrolled",
+    "units_passed",
+    "units_failed",
+    "gpa_semester_1",
+    "gpa_semester_2",
+    "attendance_rate",
+    "assignments_submitted_rate",
+    "library_visits_per_month",
+    "lms_logins_per_week",
+    "extracurricular_activities",
+    "missed_deadlines",
+    "stress_level",
+    "mental_health_support",
+    "satisfaction_score",
+    "commute_time_mins",
+    "sleep_hours"
+  ],
+  "categorical_features": [
+    "gender",
+    "nationality",
+    "family_income_level",
+    "course_type",
+    "study_mode"
+  ],
+  "split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratified": true,
+    "n_train": 80000,
+    "n_test": 20000,
+    "class_distribution": {
+      "full": {
+        "counts": {
+          "0": 67996,
+          "1": 32004
+        },
+        "percent": {
+          "0": 68.0,
+          "1": 32.0
+        }
+      },
+      "train": {
+        "counts": {
+          "0": 54397,
+          "1": 25603
+        },
+        "percent": {
+          "0": 68.0,
+          "1": 32.0
+        }
+      },
+      "test": {
+        "counts": {
+          "0": 13599,
+          "1": 6401
+        },
+        "percent": {
+          "0": 68.0,
+          "1": 32.01
+        }
+      }
+    }
+  },
+  "best_params": {
+    "Logistic Regression": {
+      "C": 0.01
+    },
+    "Decision Tree": {
+      "max_depth": 10,
+      "min_samples_leaf": 300
+    },
+    "KNN": {
+      "n_neighbors": 501
+    },
+    "Naive Bayes": "defaults",
+    "Support Vector Machine": "defaults"
+  },
+  "fit_seconds": {
+    "Logistic Regression": 6.2,
+    "Decision Tree": 24.9,
+    "KNN": 25.6,
+    "Naive Bayes": 0.3,
+    "Support Vector Machine": 218.1
+  },
+  "confusion_matrices": {
+    "Logistic Regression": [
+      [
+        12365,
+        1234
+      ],
+      [
+        1956,
+        4445
+      ]
+    ],
+    "Decision Tree": [
+      [
+        12236,
+        1363
+      ],
+      [
+        2380,
+        4021
+      ]
+    ],
+    "KNN": [
+      [
+        13069,
+        530
+      ],
+      [
+        3090,
+        3311
+      ]
+    ],
+    "Naive Bayes": [
+      [
+        11527,
+        2072
+      ],
+      [
+        1513,
+        4888
+      ]
+    ],
+    "Support Vector Machine": [
+      [
+        12533,
+        1066
+      ],
+      [
+        2204,
+        4197
+      ]
+    ]
+  },
+  "versions": {
+    "python": "3.14.6",
+    "scikit-learn": "1.9.1",
+    "pandas": "3.0.6",
+    "numpy": "2.5.4",
+    "joblib": "1.6.0"
+  }
+}
