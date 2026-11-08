@@ -8,6 +8,7 @@ Run locally:   streamlit run app.py
 """
 import html
 import json
+import os
 from pathlib import Path
 
 import joblib
@@ -26,59 +27,66 @@ ROOT = Path(__file__).resolve().parent
 MODEL_DIR = ROOT / "model"
 SAMPLE_CSV = ROOT / "test_data.csv"
 
-# ----------------------------------------------------------------------------- design tokens
-NAVY, GOLD, SLATE, INK, MUTED, LINE = "#14284B", "#B08D57", "#7C8DA6", "#1B2430", "#5B6677", "#D9DEE6"
-SERIF = "Georgia, 'Times New Roman', serif"
+THEME = os.environ.get("UI_THEME", "journal")
 
-CSS = f"""
-<style>
-.block-container {{ padding-top: 1.4rem; padding-bottom: 2rem; max-width: 1180px; }}
+TOKENS = {
+    "journal": dict(bg="#F6F2E9", paper="#FFFDF8", ink="#25221D", muted="#6D665A", line="#D9D1BF", side="#EFE8D8",
+                    accent="#8E2F1C", accent2="#476A7A", hl="#F0DDD3", cm_lo="#FBF6EA", serif=True),}
+T = TOKENS[THEME]
+INK, MUTED, LINE, ACCENT, ACCENT2, PAPER = T["ink"], T["muted"], T["line"], T["accent"], T["accent2"], T["paper"]
+SERIF = "'Source Serif', Georgia, serif"
+SANS = "'Source Sans', 'Segoe UI', Helvetica, Arial, sans-serif"
+MONO = "'Source Code Pro', Consolas, Menlo, monospace"
+
+BASE_CSS = f"""
+.stApp {{ background: {T['bg']}; }}
+.block-container {{ padding-top: 2rem; padding-bottom: 2rem; max-width: 1180px; }}
 [data-testid="stHeader"] {{ background: transparent; }}
-[data-testid="stSidebar"] {{ border-right: 1px solid {LINE}; }}
-[data-testid="stSidebar"] .block-container {{ padding-top: 1.2rem; }}
-
-/* header banner */
-.hero {{ background: {NAVY}; color: #fff; padding: 1.7rem 2rem 1.5rem; border-radius: 3px;
-        border-bottom: 4px solid {GOLD}; margin-bottom: 1.4rem; }}
-.hero .kicker {{ font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: #C4CFE4; }}
-.hero h1 {{ font-family: {SERIF}; color: #fff; font-size: 2rem; font-weight: 700; margin: .3rem 0 .45rem; padding: 0; line-height: 1.2; }}
-.hero code {{ background: rgba(255,255,255,.16); color: #fff; padding: .05rem .4rem; border-radius: 2px; font-size: .85em; }}
-.hero p {{ color: #DCE3F0; margin: 0; font-size: .95rem; max-width: 54rem; line-height: 1.55; }}
-.chips {{ display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; }}
-.chip {{ border: 1px solid rgba(255,255,255,.30); padding: .2rem .65rem; font-size: .74rem; letter-spacing: .03em; color: #E8EDF7; }}
-
-/* section headings */
-.section {{ font-family: {SERIF}; font-size: 1.2rem; font-weight: 700; color: {NAVY};
-           border-bottom: 1px solid {LINE}; padding-bottom: .4rem; margin: 1.5rem 0 .9rem; }}
-.section small {{ font-family: sans-serif; font-weight: 400; color: {MUTED}; font-size: .8rem; margin-left: .6rem; }}
-.subhead {{ font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: {MUTED}; font-weight: 700; margin: .2rem 0 .5rem; }}
-
-/* metric cards */
-[data-testid="stMetric"] {{ background: #fff; border: 1px solid {LINE}; border-top: 3px solid {NAVY};
-                           border-radius: 2px; padding: .85rem 1rem; }}
-[data-testid="stMetricLabel"] p {{ font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: {MUTED}; font-weight: 700; }}
-[data-testid="stMetricValue"] {{ font-family: {SERIF}; color: {NAVY}; font-size: 1.85rem; font-weight: 700; }}
-
-/* tabs */
-.stTabs [data-baseweb="tab-list"] {{ gap: 0; border-bottom: 1px solid {LINE}; }}
-.stTabs [data-baseweb="tab"] {{ padding: .65rem 1.2rem; }}
-.stTabs [data-baseweb="tab"] p {{ font-weight: 600; font-size: .92rem; color: {MUTED}; }}
-.stTabs [aria-selected="true"] p {{ color: {NAVY}; }}
-.stTabs [data-baseweb="tab-highlight"] {{ background-color: {GOLD}; height: 3px; }}
-
-/* info strip, empty state, sidebar labels, footer */
-.strip {{ background: #fff; border: 1px solid {LINE}; border-left: 4px solid {GOLD}; padding: .7rem 1rem;
-         font-size: .9rem; color: {INK}; margin-bottom: .4rem; }}
-.strip b {{ color: {NAVY}; }}
-.empty {{ background: #fff; border: 1px solid {LINE}; border-top: 3px solid {NAVY}; padding: 1.4rem 1.6rem; }}
-.empty h3 {{ font-family: {SERIF}; color: {NAVY}; margin: 0 0 .6rem; font-size: 1.15rem; }}
-.empty ol {{ margin: 0; padding-left: 1.2rem; color: {INK}; line-height: 1.9; font-size: .92rem; }}
-.step {{ font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: {GOLD}; font-weight: 700; margin: 0; }}
-.stitle {{ font-family: {SERIF}; font-size: 1.1rem; font-weight: 700; color: {NAVY}; margin: 0 0 .5rem; }}
-.note {{ font-size: .82rem; color: {MUTED}; line-height: 1.5; }}
-.footer {{ margin-top: 2.5rem; padding-top: .8rem; border-top: 1px solid {LINE}; font-size: .78rem; color: {MUTED}; text-align: center; letter-spacing: .02em; }}
-</style>
+[data-testid="stSidebar"] {{ background: {T['side']}; border-right: 1px solid {LINE}; }}
+[data-testid="stSidebar"] .block-container {{ padding-top: 1.4rem; }}
+[data-testid="stSidebar"] hr {{ border-color: {LINE}; }}
+[data-testid="stCheckbox"] label[data-selected="true"] > div:first-of-type {{ background-color: {ACCENT} !important; border-color: {ACCENT} !important; }}
+[data-testid="stMetric"] {{ background: transparent; }}
+div[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) {{ gap: 0; }}
+[data-testid="stTabs"] [role="tablist"] {{ gap: .2rem; border-bottom: 1px solid {LINE}; }}
+[data-testid="stTab"] {{ padding: .6rem 1rem; height: auto; }}
+[data-testid="stTab"] p {{ font-size: .95rem; color: {MUTED}; }}
+[data-testid="stTab"][aria-selected="true"] p {{ color: {INK}; font-weight: 700; }}
+.react-aria-SelectionIndicator {{ background-color: {ACCENT} !important; }}
+.note {{ font-size: .84rem; color: {MUTED}; line-height: 1.55; }}
+.cap {{ font-size: .84rem; color: {MUTED}; margin: .45rem 0 1rem; line-height: 1.5; }}
+.cap b {{ color: {INK}; }}
+.footer {{ margin-top: 2.6rem; padding-top: .8rem; border-top: 1px solid {LINE}; font-size: .78rem; color: {MUTED}; }}
+.empty h3 {{ margin: 0 0 .6rem; font-size: 1.15rem; color: {INK}; }}
+.empty ol {{ margin: 0; padding-left: 1.2rem; color: {INK}; line-height: 1.9; font-size: .95rem; }}
 """
+
+THEME_CSS = {
+    "journal": f"""
+.mast-top {{ display: flex; justify-content: space-between; font-family: {MONO}; font-size: .72rem; color: {MUTED};
+            border-bottom: 1px solid {LINE}; padding-bottom: .45rem; }}
+.mast h1 {{ font-family: {SERIF}; font-weight: 600; font-size: 2.7rem; color: {INK}; margin: 1rem 0 .1rem; padding: 0; letter-spacing: -.01em; line-height: 1.1; }}
+.mast .sub {{ font-family: {SERIF}; font-style: italic; font-size: 1.15rem; color: {MUTED}; margin-bottom: 1rem; }}
+.mast .rule {{ border-top: 3px solid {INK}; border-bottom: 1px solid {INK}; height: 5px; margin-bottom: 1rem; }}
+.mast .abs {{ font-family: {SERIF}; font-size: 1rem; line-height: 1.7; color: {INK}; max-width: 50rem; margin: 0 0 .6rem; }}
+.mast .facts {{ font-family: {MONO}; font-size: .74rem; color: {MUTED}; margin-bottom: 1.4rem; }}
+.section {{ font-family: {SERIF}; font-size: 1.4rem; font-weight: 600; color: {INK}; margin: 1.8rem 0 .6rem; }}
+.section small {{ font-family: {MONO}; font-size: .72rem; color: {MUTED}; font-weight: 400; margin-left: .8rem; }}
+.subhead {{ font-family: {SERIF}; font-style: italic; font-size: 1rem; color: {INK}; margin: .2rem 0 .4rem; }}
+[data-testid="stMetric"] {{ border-top: 2px solid {INK}; border-bottom: 1px solid {INK}; padding: .7rem 1rem .6rem; border-left: 1px solid {LINE}; }}
+div[data-testid="stColumn"]:first-child [data-testid="stMetric"] {{ border-left: none; padding-left: .2rem; }}
+[data-testid="stMetricLabel"] p {{ font-size: .8rem; color: {MUTED}; font-style: italic; font-family: {SERIF}; }}
+[data-testid="stMetricValue"] {{ font-family: {MONO}; font-weight: 500; font-size: 1.65rem; color: {INK}; }}
+.strip {{ font-family: {SERIF}; font-style: italic; color: {MUTED}; font-size: .95rem; margin: 0 0 .2rem; }}
+.strip b {{ font-style: normal; color: {INK}; }}
+.cap, .note {{ font-family: {SERIF}; }}
+.empty {{ border-top: 3px solid {INK}; border-bottom: 1px solid {INK}; padding: 1.2rem .2rem; font-family: {SERIF}; }}
+.empty h3 {{ font-family: {SERIF}; font-weight: 600; }}
+.step {{ font-family: {MONO}; font-size: .72rem; color: {ACCENT}; margin: 0; }}
+.stitle {{ font-family: {SERIF}; font-size: 1.15rem; font-weight: 600; color: {INK}; margin: 0 0 .5rem; }}
+.footer {{ font-family: {SERIF}; font-style: italic; }}
+""",
+}
 
 MODEL_NOTES = {
     "Logistic Regression": "Linear model; outputs calibrated probabilities. Strong baseline when the signal is mostly additive.",
@@ -89,20 +97,54 @@ MODEL_NOTES = {
 }
 
 st.set_page_config(page_title="Student Dropout Risk | Model Evaluation", layout="wide")
-st.markdown(CSS, unsafe_allow_html=True)
+st.markdown(f"<style>{BASE_CSS}{THEME_CSS[THEME]}</style>", unsafe_allow_html=True)
 
 # matplotlib look that matches the page
 plt.rcParams.update({
-    "font.family": "sans-serif", "axes.edgecolor": LINE, "axes.labelcolor": INK, "text.color": INK,
-    "xtick.color": MUTED, "ytick.color": MUTED, "axes.spines.top": False, "axes.spines.right": False,
-    "axes.grid": True, "grid.color": "#E7EAF0", "grid.linewidth": 0.8, "axes.axisbelow": True,
+    "font.family": "serif" if T["serif"] else "sans-serif", "axes.edgecolor": INK, "axes.labelcolor": INK,
+    "text.color": INK, "xtick.color": MUTED, "ytick.color": MUTED, "axes.spines.top": False,
+    "axes.spines.right": False, "axes.grid": True, "grid.color": LINE, "grid.linewidth": 0.6, "axes.axisbelow": True,
+    "figure.facecolor": PAPER, "axes.facecolor": PAPER,
 })
-NAVY_MAP = LinearSegmentedColormap.from_list("navy", ["#F4F6FA", "#9DAAC4", NAVY])
+CM_MAP = LinearSegmentedColormap.from_list("theme", [T["cm_lo"], ACCENT])
 
 
 def section(title, hint=""):
     small = f"<small>{html.escape(hint)}</small>" if hint else ""
     st.markdown(f'<div class="section">{html.escape(title)}{small}</div>', unsafe_allow_html=True)
+
+
+def caption(label, text):
+    st.markdown(f'<p class="cap"><b>{html.escape(label)}</b> {html.escape(text)}</p>', unsafe_allow_html=True)
+
+
+def masthead(n_features, n_test, sklearn_version):
+    """Header block; its structure differs per theme (not just its colours)."""
+    t_ = f"<code>{TARGET}</code>"
+    desc = ("Comparative evaluation of five classifiers - Logistic Regression, Decision Tree, K-Nearest Neighbor, "
+            "Naive Bayes and Support Vector Machine - predicting whether a student will drop out "
+            f"({t_} = 1), scored on a held-out test set with the saved models.")
+    if THEME == "journal":
+        return (f'<div class="mast"><div class="mast-top"><span>Machine Learning &middot; S1-26_AIMLZG565</span>'
+                "<span>Assignment 2</span></div>"
+                "<h1>Student Dropout Risk</h1>"
+                '<div class="sub">A comparative evaluation of five classification models</div>'
+                '<div class="rule"></div>'
+                f'<p class="abs"><b>Abstract.</b> {desc}</p>'
+                f'<div class="facts">binary classification &nbsp;/&nbsp; {n_features} input features &nbsp;/&nbsp; '
+                f"test set n = {n_test:,} &nbsp;/&nbsp; scikit-learn {sklearn_version}</div></div>")
+    if THEME == "swiss":
+        return ('<div class="mast"><div class="bar"></div>'
+                '<div class="meta">ML ASSIGNMENT 2 / S1-26_AIMLZG565</div>'
+                "<h1>Student dropout risk</h1>"
+                '<div class="sub">Model evaluation &mdash; five classifiers, one held-out test set.</div>'
+                f'<div class="data">BINARY<i>/</i>{n_features} FEATURES<i>/</i>5 MODELS<i>/</i>N = {n_test:,}'
+                f"<i>/</i>SKLEARN {sklearn_version}</div></div>")
+    rows = [("Task", "Binary classification"), ("Target", TARGET), ("Input features", str(n_features)),
+            ("Models compared", "5"), ("Test set", f"{n_test:,} students"), ("scikit-learn", sklearn_version)]
+    table = "".join(f"<tr><td>{a}</td><td>{html.escape(b)}</td></tr>" for a, b in rows)
+    return ('<div class="mast"><div class="l"><div class="eyebrow">Machine Learning &middot; Assignment 2 &middot; Evaluation report</div>'
+            f"<h1>Student Dropout Risk</h1><p>{desc}</p></div><table>{table}</table></div>")
 
 
 # ----------------------------------------------------------------------------- cached loaders
@@ -165,22 +207,7 @@ with st.sidebar:
                 'scored - it is never used for retraining.</p>', unsafe_allow_html=True)
 
 # ----------------------------------------------------------------------------- header
-chips = [
-    "Binary classification",
-    f"{len(FEATURES)} input features",
-    "5 classifiers",
-    f"Hold-out test set: {meta['split']['n_test']:,} students",
-    f"scikit-learn {trained_with}",
-]
-st.markdown(
-    '<div class="hero"><div class="kicker">Machine Learning &middot; Assignment 2</div>'
-    "<h1>Student Dropout Risk &mdash; Model Evaluation</h1>"
-    "<p>Evaluate five classifiers (Logistic Regression, Decision Tree, K-Nearest Neighbor, Naive Bayes, "
-    f"Support Vector Machine) on a held-out test set to predict whether a student will drop out "
-    f"(<code>{TARGET}</code> = 1).</p>"
-    '<div class="chips">' + "".join(f'<span class="chip">{html.escape(c)}</span>' for c in chips) + "</div></div>",
-    unsafe_allow_html=True,
-)
+st.markdown(masthead(len(FEATURES), meta["split"]["n_test"], trained_with), unsafe_allow_html=True)
 
 with st.expander("Expected CSV format"):
     st.write(f"The file must contain these **{len(FEATURES)} feature columns** plus the target column `{TARGET}` (0 / 1). "
@@ -240,7 +267,7 @@ cols = st.columns(6)
 for col, (name, value) in zip(cols, metrics.items()):
     col.metric(name, "n/a" if np.isnan(value) else f"{value:.4f}")
 
-st.write("")
+caption("Table 1.", f"Evaluation metrics of {model_name} on {len(df):,} test students (positive class = dropout).")
 tab_cm, tab_roc, tab_pred, tab_bench = st.tabs(
     ["Confusion Matrix & Report", "ROC Curve", "Predictions", "Benchmark: All Models"]
 )
@@ -253,13 +280,14 @@ with tab_cm:
     with left:
         st.markdown('<p class="subhead">Confusion matrix</p>', unsafe_allow_html=True)
         fig, ax = plt.subplots(figsize=(5, 4))
-        sns.heatmap(cm, annot=annot, fmt="", cmap=NAVY_MAP, cbar=False, ax=ax, linewidths=3, linecolor="white",
+        sns.heatmap(cm, annot=annot, fmt="", cmap=CM_MAP, cbar=False, ax=ax, linewidths=3, linecolor=PAPER,
                     xticklabels=CLASS_LABELS, yticklabels=CLASS_LABELS, annot_kws={"fontsize": 10})
         ax.set(xlabel="Predicted", ylabel="Actual")
         ax.grid(False)
         fig.tight_layout()
         st.pyplot(fig)
         plt.close(fig)
+        caption("Figure 1.", f"Confusion matrix of {model_name}; percentages are shares of each actual class.")
     with right:
         st.markdown('<p class="subhead">Classification report</p>', unsafe_allow_html=True)
         report = classification_report(y_true, y_pred, labels=[0, 1], target_names=CLASS_LABELS,
@@ -276,14 +304,15 @@ with tab_roc:
         with roc_left:
             st.markdown('<p class="subhead">Receiver operating characteristic</p>', unsafe_allow_html=True)
             fig, ax = plt.subplots(figsize=(5.5, 4.5))
-            ax.plot(fpr, tpr, color=NAVY, lw=2.2, label=f"{model_name} (AUC {metrics['AUC']:.4f})")
-            ax.fill_between(fpr, tpr, alpha=0.07, color=NAVY)
-            ax.plot([0, 1], [0, 1], "--", color=GOLD, lw=1.4, label="Random guess")
+            ax.plot(fpr, tpr, color=ACCENT, lw=2.2, label=f"{model_name} (AUC {metrics['AUC']:.4f})")
+            ax.fill_between(fpr, tpr, alpha=0.08, color=ACCENT)
+            ax.plot([0, 1], [0, 1], "--", color=ACCENT2, lw=1.2, label="Random guess")
             ax.set(xlabel="False positive rate", ylabel="True positive rate", xlim=(0, 1), ylim=(0, 1.01))
             ax.legend(loc="lower right", frameon=False)
             fig.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
+            caption("Figure 2.", f"ROC curve of {model_name}.")
         with roc_right:
             st.markdown('<p class="subhead">How to read this</p>', unsafe_allow_html=True)
             st.markdown(
@@ -309,8 +338,8 @@ with tab_bench:
         st.markdown('<p class="note">Metrics recorded by training.py on the original 20 % hold-out set '
                     "(same file as test_data.csv). Highlighted cell = best in column.</p>", unsafe_allow_html=True)
         bench = pd.read_csv(bench_path).set_index("ML Model Name")
-        st.dataframe(bench.style.format("{:.4f}").highlight_max(axis=0, color="#F1E6CF"), width="stretch")
-        st.bar_chart(bench[["AUC", "F1", "MCC"]], color=[NAVY, GOLD, SLATE])
+        st.dataframe(bench.style.format("{:.4f}").highlight_max(axis=0, color=T["hl"]), width="stretch")
+        st.bar_chart(bench[["AUC", "F1", "MCC"]], color=[ACCENT, ACCENT2, MUTED])
     else:
         st.info("model/metrics.csv not found.")
 
